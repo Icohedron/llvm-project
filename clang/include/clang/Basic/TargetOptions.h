@@ -122,6 +122,8 @@ public:
 
   /// The entry point name for HLSL shader being compiled as specified by -E.
   std::string HLSLEntry;
+
+  /// ResMayAlias?
 };
 
 } // end namespace clang

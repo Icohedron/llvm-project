@@ -12,6 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "DXILShaderFlags.h"
+#include "DXILResourceAnalysis.h"
 #include "DirectX.h"
 #include "llvm/ADT/SCCIterator.h"
 #include "llvm/ADT/SmallVector.h"
@@ -74,6 +75,7 @@ static bool checkWaveOps(Intrinsic::ID IID) {
 /// \param I Instruction to check.
 void ModuleShaderFlags::updateFunctionFlags(ComputedShaderFlags &CSF,
                                             const Instruction &I,
+                                            const ModuleMetadataInfo &MMDI,
                                             DXILResourceTypeMap &DRTM) {
   if (!CSF.Doubles)
     CSF.Doubles = I.getType()->isDoubleTy();
@@ -117,6 +119,12 @@ void ModuleShaderFlags::updateFunctionFlags(ComputedShaderFlags &CSF,
     default:
       break;
     case Intrinsic::dx_resource_handlefrombinding:
+      if (!CSF.ResMayNotAlias &&
+          MMDI.DXILVersion > VersionTuple(1, 7) &&
+         /* TODO: -res-may-alias is not set && */
+          DRTM[cast<TargetExtType>(II->getType())].isUAV()) {
+        CSF.ResMayNotAlias = true;
+      }
       switch (DRTM[cast<TargetExtType>(II->getType())].getResourceKind()) {
       case dxil::ResourceKind::StructuredBuffer:
       case dxil::ResourceKind::RawBuffer:
@@ -151,7 +159,8 @@ void ModuleShaderFlags::updateFunctionFlags(ComputedShaderFlags &CSF,
 
 /// Construct ModuleShaderFlags for module Module M
 void ModuleShaderFlags::initialize(Module &M, DXILResourceTypeMap &DRTM,
-                                   const ModuleMetadataInfo &MMDI) {
+                                   const ModuleMetadataInfo &MMDI,
+                                   const dxil::Resources &MDResources) {
   CallGraph CG(M);
 
   // Compute Shader Flags Mask for all functions using post-order visit of SCC
@@ -176,10 +185,14 @@ void ModuleShaderFlags::initialize(Module &M, DXILResourceTypeMap &DRTM,
         continue;
       }
 
+      if (!SCCSF.ResMayNotAlias && MMDI.DXILVersion <= VersionTuple(1, 7) /* TODO: && -res-may-alias is not set */) {
+        SCCSF.ResMayNotAlias = MDResources.hasUAVs();
+      }
+
       ComputedShaderFlags CSF;
       for (const auto &BB : *F)
         for (const auto &I : BB)
-          updateFunctionFlags(CSF, I, DRTM);
+          updateFunctionFlags(CSF, I, MMDI, DRTM);
       // Update combined shader flags mask for all functions in this SCC
       SCCSF.merge(CSF);
 
@@ -250,9 +263,10 @@ ModuleShaderFlags ShaderFlagsAnalysis::run(Module &M,
                                            ModuleAnalysisManager &AM) {
   DXILResourceTypeMap &DRTM = AM.getResult<DXILResourceTypeAnalysis>(M);
   const ModuleMetadataInfo MMDI = AM.getResult<DXILMetadataAnalysis>(M);
+  const dxil::Resources &MDResources = AM.getResult<DXILResourceMDAnalysis>(M);
 
   ModuleShaderFlags MSFI;
-  MSFI.initialize(M, DRTM, MMDI);
+  MSFI.initialize(M, DRTM, MMDI, MDResources);
 
   return MSFI;
 }
@@ -284,6 +298,7 @@ bool ShaderFlagsAnalysisWrapper::runOnModule(Module &M) {
       getAnalysis<DXILResourceTypeWrapperPass>().getResourceTypeMap();
   const ModuleMetadataInfo MMDI =
       getAnalysis<DXILMetadataAnalysisWrapperPass>().getModuleMetadata();
+  dxil::Resources &Res = getAnalysis<DXILResourceMDWrapper>().getDXILResource();
 
   MSFI.initialize(M, DRTM, MMDI);
   return false;
@@ -292,6 +307,7 @@ bool ShaderFlagsAnalysisWrapper::runOnModule(Module &M) {
 void ShaderFlagsAnalysisWrapper::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.setPreservesAll();
   AU.addRequiredTransitive<DXILResourceTypeWrapperPass>();
+  AU.addRequiredTransitive<DXILResourceMDWrapper>();
   AU.addRequired<DXILMetadataAnalysisWrapperPass>();
 }
 

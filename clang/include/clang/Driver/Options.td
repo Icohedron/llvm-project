@@ -9083,6 +9083,8 @@ def dxc_disable_validation : DXCFlag<"Vd">,
 def : Option<["/", "-"], "Qembed_debug", KIND_FLAG>, Group<dxc_Group>,
   Flags<[Ignored]>, Visibility<[DXCOption]>,
   HelpText<"Embed PDB in shader container (ignored)">;
+def res_may_alias : DXCFlag<"res-may-alias">,
+  HelpText<"Assume that UAVs/SRVs may alias">;
 def spirv : DXCFlag<"spirv">,
   HelpText<"Generate SPIR-V code">;
 def fspv_target_env_EQ : Joined<["-"], "fspv-target-env=">, Group<dxc_Group>,

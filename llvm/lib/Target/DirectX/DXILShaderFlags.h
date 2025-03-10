@@ -14,6 +14,7 @@
 #ifndef LLVM_TARGET_DIRECTX_DXILSHADERFLAGS_H
 #define LLVM_TARGET_DIRECTX_DXILSHADERFLAGS_H
 
+#include "DXILResource.h"
 #include "llvm/Analysis/DXILMetadataAnalysis.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/PassManager.h"
@@ -85,7 +86,8 @@ struct ComputedShaderFlags {
 
 struct ModuleShaderFlags {
   void initialize(Module &, DXILResourceTypeMap &DRTM,
-                  const ModuleMetadataInfo &MMDI);
+                  const ModuleMetadataInfo &MMDI,
+                  const dxil::Resources &MDResources);
   const ComputedShaderFlags &getFunctionFlags(const Function *) const;
   const ComputedShaderFlags &getCombinedFlags() const { return CombinedSFMask; }
 
@@ -97,6 +99,7 @@ private:
   /// Combined Shader Flag Mask of all functions of the module
   ComputedShaderFlags CombinedSFMask{};
   void updateFunctionFlags(ComputedShaderFlags &, const Instruction &,
+                           const ModuleMetadataInfo &MMDI,
                            DXILResourceTypeMap &);
 };
 
