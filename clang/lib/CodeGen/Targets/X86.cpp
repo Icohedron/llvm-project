@@ -3202,6 +3202,7 @@ RValue X86_64ABIInfo::EmitVAArg(CodeGenFunction &CGF, Address VAListAddr,
       // register save area.
       if (neededInt && TyAlign.getQuantity() > 8) {
         Address Tmp = CGF.CreateMemTemp(Ty);
+        llvm::dbgs() << "MemCpy Emitted in X86.cpp: EmitVAArg\n";
         CGF.Builder.CreateMemCpy(Tmp, RegAddr, TySize, false);
         RegAddr = Tmp;
       }

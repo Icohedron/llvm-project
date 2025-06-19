@@ -1000,6 +1000,7 @@ namespace {
     void emitMemcpyIR(Address DestPtr, Address SrcPtr, CharUnits Size) {
       DestPtr = DestPtr.withElementType(CGF.Int8Ty);
       SrcPtr = SrcPtr.withElementType(CGF.Int8Ty);
+      llvm::dbgs() << "MemCpy Emitted in CGClass.cpp: emitMemcpyIR\n";
       CGF.Builder.CreateMemCpy(DestPtr, SrcPtr, Size.getQuantity());
     }
 

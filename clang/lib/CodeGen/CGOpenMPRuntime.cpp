@@ -4182,6 +4182,7 @@ void CGOpenMPRuntime::emitDepobjElements(CodeGenFunction &CGF,
           CGF.Builder.CreateIntCast(NumDeps, CGF.SizeTy, /*isSigned=*/false));
       llvm::Value *Pos = CGF.EmitLoadOfScalar(PosLVal, E->getExprLoc());
       Address DepAddr = CGF.Builder.CreateGEP(CGF, DependenciesArray, Pos);
+      llvm::dbgs() << "MemCpy Emitted in CGOpenMPRuntime.cpp: emitDepobjElements\n";
       CGF.Builder.CreateMemCpy(DepAddr, Base.getAddress(), Size);
 
       // Increase pos.

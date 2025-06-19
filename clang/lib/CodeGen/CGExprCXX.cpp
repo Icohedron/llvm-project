@@ -575,6 +575,7 @@ static void EmitNullBaseClassInitialization(CodeGenFunction &CGF,
       CharUnits StoreOffset = Store.first;
       CharUnits StoreSize = Store.second;
       llvm::Value *StoreSizeVal = CGF.CGM.getSize(StoreSize);
+      llvm::dbgs() << "MemCpy Emitted in CGExprCXX.cpp: EmitNullBaseClassInitialization\n";
       CGF.Builder.CreateMemCpy(
           CGF.Builder.CreateConstInBoundsByteGEP(DestPtr, StoreOffset),
           CGF.Builder.CreateConstInBoundsByteGEP(SrcPtr, StoreOffset),
@@ -589,6 +590,7 @@ static void EmitNullBaseClassInitialization(CodeGenFunction &CGF,
       CharUnits StoreOffset = Store.first;
       CharUnits StoreSize = Store.second;
       llvm::Value *StoreSizeVal = CGF.CGM.getSize(StoreSize);
+      llvm::dbgs() << "MemSet Emitted in CGExprCXX.cpp: EmitNullBaseClassInitialization\n";
       CGF.Builder.CreateMemSet(
           CGF.Builder.CreateConstInBoundsByteGEP(DestPtr, StoreOffset),
           CGF.Builder.getInt8(0), StoreSizeVal);
@@ -1042,6 +1044,7 @@ void CodeGenFunction::EmitNewArrayInitializer(
     }
 
     // Create the memset.
+    llvm::dbgs() << "MemSet Emitted in CGExprCXX.cpp: EmitNewArrayInitializer\n";
     Builder.CreateMemSet(CurPtr, Builder.getInt8(0), RemainingSize, false);
     return true;
   };

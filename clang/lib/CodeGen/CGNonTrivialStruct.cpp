@@ -537,6 +537,7 @@ struct GenBinaryFunc : CopyStructVisitor<Derived, IsMove>,
           llvm::ConstantInt::get(this->CGF->SizeTy, Size.getQuantity());
       DstAddr = DstAddr.withElementType(this->CGF->Int8Ty);
       SrcAddr = SrcAddr.withElementType(this->CGF->Int8Ty);
+      llvm::dbgs() << "MemCpy Emitted in CGNonTrivialStruct.cpp: GenBinaryFunc\n";
       this->CGF->Builder.CreateMemCpy(DstAddr, SrcAddr, SizeVal, false);
     } else {
       llvm::Type *Ty = llvm::Type::getIntNTy(
@@ -679,6 +680,7 @@ struct GenDefaultInitialize
     llvm::Constant *SizeVal = CGF->Builder.getInt64(Size.getQuantity());
     Address DstAddr = getAddrWithOffset(Addrs[DstIdx], CurStructOffset, FD);
     Address Loc = DstAddr.withElementType(CGF->Int8Ty);
+    llvm::dbgs() << "MemSet Emitted in CGNonTrivialStruct.cpp: visitArray\n";
     CGF->Builder.CreateMemSet(Loc, CGF->Builder.getInt8(0), SizeVal,
                               IsVolatile);
   }

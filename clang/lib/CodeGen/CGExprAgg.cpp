@@ -883,6 +883,7 @@ void AggExprEmitter::VisitCastExpr(CastExpr *E) {
     llvm::Value *SizeVal = llvm::ConstantInt::get(
         CGF.SizeTy,
         CGF.getContext().getTypeSizeInChars(E->getType()).getQuantity());
+    llvm::dbgs() << "MemCpy Emitted in CGExprAgg.cpp: CK_ToUnion\n";
     Builder.CreateMemCpy(DestAddress, SourceAddress, SizeVal);
     break;
   }
@@ -1956,6 +1957,7 @@ void AggExprEmitter::DoZeroInitPadding(uint64_t &PaddingStart,
     if (!Start.isZero())
       Addr = Builder.CreateConstGEP(Addr, Start.getQuantity());
     llvm::Constant *SizeVal = Builder.getInt64((End - Start).getQuantity());
+    llvm::dbgs() << "MemSet Emitted in CGExprAgg.cpp: DoZeroInitPadding\n";
     CGF.Builder.CreateMemSet(Addr, Builder.getInt8(0), SizeVal, false);
   };
 
@@ -2192,6 +2194,7 @@ static void CheckAggExprForMemSetUse(AggValueSlot &Slot, const Expr *E,
   llvm::Constant *SizeVal = CGF.Builder.getInt64(Size.getQuantity());
 
   Address Loc = Slot.getAddress().withElementType(CGF.Int8Ty);
+  llvm::dbgs() << "MemSet Emitted in CGExprAgg.cpp.cpp: CheckAggExprForMemSetUse\n";
   CGF.Builder.CreateMemSet(Loc, CGF.Builder.getInt8(0), SizeVal, false);
 
   // Tell the AggExprEmitter that the slot is known zero.
@@ -2394,6 +2397,7 @@ void CodeGenFunction::EmitAggregateCopy(LValue Dest, LValue Src, QualType Ty,
     }
   }
 
+  llvm::dbgs() << "MemCpy Emitted in CGExprAgg.cpp: EmitAggregateCopy\n";
   auto *Inst = Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, isVolatile);
   addInstToCurrentSourceAtom(Inst, nullptr);
 

@@ -1204,6 +1204,7 @@ void CodeGenFunction::emitStoresForConstant(const VarDecl &D, Address Loc,
   // If the initializer is all or mostly the same, codegen with bzero / memset
   // then do a few stores afterward.
   if (shouldUseBZeroPlusStoresToInitialize(constant, ConstantSize)) {
+    llvm::dbgs() << "MemSet Emitted in CGDecl.cpp: emitStoresForConstant (1)\n";
     auto *I = Builder.CreateMemSet(Loc, llvm::ConstantInt::get(CGM.Int8Ty, 0),
                                    SizeVal, isVolatile);
     addInstToCurrentSourceAtom(I, nullptr);
@@ -1230,6 +1231,7 @@ void CodeGenFunction::emitStoresForConstant(const VarDecl &D, Address Loc,
       assert(AP.getBitWidth() <= 8);
       Value = AP.getLimitedValue();
     }
+    llvm::dbgs() << "MemSet Emitted in CGDecl.cpp: emitStoresForConstant (2)\n";
     auto *I = Builder.CreateMemSet(
         Loc, llvm::ConstantInt::get(CGM.Int8Ty, Value), SizeVal, isVolatile);
     addInstToCurrentSourceAtom(I, nullptr);
@@ -1274,6 +1276,7 @@ void CodeGenFunction::emitStoresForConstant(const VarDecl &D, Address Loc,
   }
 
   // Copy from a global.
+  llvm::dbgs() << "MemCpy Emitted in CGDecl.cpp: createUnnamedGlobalForMemcpyFrom\n";
   auto *I =
       Builder.CreateMemCpy(Loc,
                            createUnnamedGlobalForMemcpyFrom(
@@ -1878,6 +1881,7 @@ void CodeGenFunction::emitZeroOrPatternForAutoVarInit(QualType type,
       return;
     if (!EltSize.isOne())
       SizeVal = Builder.CreateNUWMul(SizeVal, CGM.getSize(EltSize));
+    llvm::dbgs() << "MemSet Emitted in CGDecl.cpp: emitZeroOrPatternForAutoVarInit\n";
     auto *I = Builder.CreateMemSet(Loc, llvm::ConstantInt::get(Int8Ty, 0),
                                    SizeVal, isVolatile);
     I->addAnnotationMetadata("auto-init");

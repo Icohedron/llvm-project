@@ -1399,6 +1399,7 @@ static llvm::Value *CreateCoercedLoad(Address Src, llvm::Type *Ty,
   // Otherwise do coercion through memory. This is stupid, but simple.
   RawAddress Tmp =
       CreateTempAllocaForCoercion(CGF, Ty, Src.getAlignment(), Src.getName());
+  llvm::dbgs() << "MemCpy Emitted in CGCall.cpp: CreateCoercedLoad\n";
   CGF.Builder.CreateMemCpy(
       Tmp.getPointer(), Tmp.getAlignment().getAsAlign(),
       Src.emitRawPointer(CGF), Src.getAlignment().getAsAlign(),
