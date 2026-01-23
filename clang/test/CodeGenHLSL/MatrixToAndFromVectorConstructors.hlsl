@@ -89,3 +89,67 @@ bool3x1 fn2(bool3 b) {
 int3 fn3(bool1x3 b) {
     return b;
 }
+
+// CHECK-LABEL: define hidden noundef nofpclass(nan inf) <4 x float> @_Z11fn_explicitu11matrix_typeILm2ELm2EfE(
+// CHECK-SAME: <4 x float> noundef nofpclass(nan inf) [[M:%.*]]) #[[ATTR0]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[M_ADDR:%.*]] = alloca [4 x float], align 4
+// CHECK-NEXT:    [[V:%.*]] = alloca <4 x float>, align 16
+// CHECK-NEXT:    [[HLSL_EWCAST_SRC:%.*]] = alloca [4 x float], align 4
+// CHECK-NEXT:    [[FLATCAST_TMP:%.*]] = alloca <4 x float>, align 16
+// CHECK-NEXT:    store <4 x float> [[M]], ptr [[M_ADDR]], align 4
+// CHECK-NEXT:    [[TMP0:%.*]] = load <4 x float>, ptr [[M_ADDR]], align 4
+// CHECK-NEXT:    store <4 x float> [[TMP0]], ptr [[HLSL_EWCAST_SRC]], align 4
+// CHECK-NEXT:    [[GEP:%.*]] = getelementptr inbounds <4 x float>, ptr [[HLSL_EWCAST_SRC]], i32 0, i32 0
+// CHECK-NEXT:    [[GEP1:%.*]] = getelementptr inbounds <4 x float>, ptr [[HLSL_EWCAST_SRC]], i32 0, i32 1
+// CHECK-NEXT:    [[GEP2:%.*]] = getelementptr inbounds <4 x float>, ptr [[HLSL_EWCAST_SRC]], i32 0, i32 2
+// CHECK-NEXT:    [[GEP3:%.*]] = getelementptr inbounds <4 x float>, ptr [[HLSL_EWCAST_SRC]], i32 0, i32 3
+// CHECK-NEXT:    [[TMP1:%.*]] = load <4 x float>, ptr [[FLATCAST_TMP]], align 16
+// CHECK-NEXT:    [[TMP2:%.*]] = load float, ptr [[GEP]], align 4
+// CHECK-NEXT:    [[TMP3:%.*]] = insertelement <4 x float> [[TMP1]], float [[TMP2]], i64 0
+// CHECK-NEXT:    [[TMP4:%.*]] = load float, ptr [[GEP1]], align 4
+// CHECK-NEXT:    [[TMP5:%.*]] = insertelement <4 x float> [[TMP3]], float [[TMP4]], i64 1
+// CHECK-NEXT:    [[TMP6:%.*]] = load float, ptr [[GEP2]], align 4
+// CHECK-NEXT:    [[TMP7:%.*]] = insertelement <4 x float> [[TMP5]], float [[TMP6]], i64 2
+// CHECK-NEXT:    [[TMP8:%.*]] = load float, ptr [[GEP3]], align 4
+// CHECK-NEXT:    [[TMP9:%.*]] = insertelement <4 x float> [[TMP7]], float [[TMP8]], i64 3
+// CHECK-NEXT:    store <4 x float> [[TMP9]], ptr [[V]], align 16
+// CHECK-NEXT:    [[TMP10:%.*]] = load <4 x float>, ptr [[V]], align 16
+// CHECK-NEXT:    ret <4 x float> [[TMP10]]
+//
+float4 fn_explicit(float2x2 m) {
+    float4 v = (float4) m;
+    return v;
+}
+
+// CHECK-LABEL: define hidden noundef <3 x i32> @_Z12fn3_explicitu11matrix_typeILm1ELm3EbE(
+// CHECK-SAME: <3 x i1> noundef [[B:%.*]]) #[[ATTR0]] {
+// CHECK-NEXT:  [[ENTRY:.*:]]
+// CHECK-NEXT:    [[B_ADDR:%.*]] = alloca [3 x i32], align 4
+// CHECK-NEXT:    [[HLSL_EWCAST_SRC:%.*]] = alloca [3 x i32], align 4
+// CHECK-NEXT:    [[FLATCAST_TMP:%.*]] = alloca <3 x i32>, align 16
+// CHECK-NEXT:    [[TMP0:%.*]] = zext <3 x i1> [[B]] to <3 x i32>
+// CHECK-NEXT:    store <3 x i32> [[TMP0]], ptr [[B_ADDR]], align 4
+// CHECK-NEXT:    [[TMP1:%.*]] = load <3 x i32>, ptr [[B_ADDR]], align 4
+// CHECK-NEXT:    store <3 x i32> [[TMP1]], ptr [[HLSL_EWCAST_SRC]], align 4
+// CHECK-NEXT:    [[GEP:%.*]] = getelementptr inbounds <3 x i32>, ptr [[HLSL_EWCAST_SRC]], i32 0, i32 0
+// CHECK-NEXT:    [[GEP1:%.*]] = getelementptr inbounds <3 x i32>, ptr [[HLSL_EWCAST_SRC]], i32 0, i32 1
+// CHECK-NEXT:    [[GEP2:%.*]] = getelementptr inbounds <3 x i32>, ptr [[HLSL_EWCAST_SRC]], i32 0, i32 2
+// CHECK-NEXT:    [[TMP2:%.*]] = load <3 x i32>, ptr [[FLATCAST_TMP]], align 16
+// CHECK-NEXT:    [[TMP3:%.*]] = load i32, ptr [[GEP]], align 4
+// CHECK-NEXT:    [[LOADEDV:%.*]] = trunc i32 [[TMP3]] to i1
+// CHECK-NEXT:    [[CONV:%.*]] = zext i1 [[LOADEDV]] to i32
+// CHECK-NEXT:    [[TMP4:%.*]] = insertelement <3 x i32> [[TMP2]], i32 [[CONV]], i64 0
+// CHECK-NEXT:    [[TMP5:%.*]] = load i32, ptr [[GEP1]], align 4
+// CHECK-NEXT:    [[LOADEDV3:%.*]] = trunc i32 [[TMP5]] to i1
+// CHECK-NEXT:    [[CONV4:%.*]] = zext i1 [[LOADEDV3]] to i32
+// CHECK-NEXT:    [[TMP6:%.*]] = insertelement <3 x i32> [[TMP4]], i32 [[CONV4]], i64 1
+// CHECK-NEXT:    [[TMP7:%.*]] = load i32, ptr [[GEP2]], align 4
+// CHECK-NEXT:    [[LOADEDV5:%.*]] = trunc i32 [[TMP7]] to i1
+// CHECK-NEXT:    [[CONV6:%.*]] = zext i1 [[LOADEDV5]] to i32
+// CHECK-NEXT:    [[TMP8:%.*]] = insertelement <3 x i32> [[TMP6]], i32 [[CONV6]], i64 2
+// CHECK-NEXT:    ret <3 x i32> [[TMP8]]
+//
+int3 fn3_explicit(bool1x3 b) {
+    return (int3) b;
+}
