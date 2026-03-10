@@ -13,12 +13,12 @@ double2 test_int_builtin(double2 p0) {
 float test_ambiguous(float p0) {
   return countbits(p0);
   // expected-error@-1 {{call to 'countbits' is ambiguous}}
-  // expected-note@hlsl/hlsl_intrinsics.h:* {{candidate function}}  
-  // expected-note@hlsl/hlsl_intrinsics.h:* {{candidate function}}
-  // expected-note@hlsl/hlsl_intrinsics.h:* {{candidate function}}
-  // expected-note@hlsl/hlsl_intrinsics.h:* {{candidate function}}  
-  // expected-note@hlsl/hlsl_intrinsics.h:* {{candidate function}}
-  // expected-note@hlsl/hlsl_intrinsics.h:* {{candidate function}}
+  // expected-note@hlsl/hlsl_intrinsics_gen.inc:* {{candidate function}}  
+  // expected-note@hlsl/hlsl_intrinsics_gen.inc:* {{candidate function}}
+  // expected-note@hlsl/hlsl_intrinsics_gen.inc:* {{candidate function}}
+  // expected-note@hlsl/hlsl_intrinsics_gen.inc:* {{candidate function}}  
+  // expected-note@hlsl/hlsl_intrinsics_gen.inc:* {{candidate function}}
+  // expected-note@hlsl/hlsl_intrinsics_gen.inc:* {{candidate function}}
 }
 
 float test_float_builtin(float p0) {

@@ -91,7 +91,6 @@ set(hlsl_h
   )
 set(hlsl_subdir_files
   hlsl/hlsl_basic_types.h
-  hlsl/hlsl_alias_intrinsics.h
   hlsl/hlsl_compat_overloads.h
   hlsl/hlsl_intrinsic_helpers.h
   hlsl/hlsl_intrinsics.h
@@ -503,6 +502,15 @@ if(RISCV IN_LIST LLVM_TARGETS_TO_BUILD)
     )
 endif()
 
+# Generate HLSL intrinsic overloads
+clang_generate_header(-gen-hlsl-intrinsics HLSLIntrinsics.td
+                      hlsl/hlsl_intrinsics_gen.inc)
+clang_generate_header(-gen-hlsl-intrinsics-detail HLSLIntrinsics.td
+                      hlsl/hlsl_detail_intrinsics_gen.inc)
+set(hlsl_generated_files
+  "${CMAKE_CURRENT_BINARY_DIR}/hlsl/hlsl_intrinsics_gen.inc"
+  "${CMAKE_CURRENT_BINARY_DIR}/hlsl/hlsl_detail_intrinsics_gen.inc")
+
 
 # Check if the generated headers are included in a target specific lists
 # Currently, all generated headers are target specific.
@@ -510,7 +518,8 @@ set(all_target_specific_generated_files
   ${arm_common_generated_files}
   ${arm_only_generated_files}
   ${aarch64_only_generated_files}
-  ${riscv_generated_files})
+  ${riscv_generated_files}
+  ${hlsl_generated_files})
 foreach( f ${generated_files} )
   if (NOT ${f} IN_LIST all_target_specific_generated_files)
     message(WARNING "${f} is a generated header but it is not included in any "
@@ -578,7 +587,7 @@ add_header_target("x86-resource-headers" "${x86_files}")
 add_header_target("gpu-resource-headers" "${gpu_files}")
 
 # Other header groupings
-add_header_target("hlsl-resource-headers" ${hlsl_files})
+add_header_target("hlsl-resource-headers" "${hlsl_files};${hlsl_generated_files}")
 add_header_target("spirv-resource-headers" ${spirv_files})
 add_header_target("opencl-resource-headers" ${opencl_files})
 add_header_target("llvm-libc-resource-headers" ${llvm_libc_wrapper_files})
