@@ -120,6 +120,7 @@ enum ActionType {
   GenRISCVAndesVectorBuiltinSema,
   GenHLSLAliasIntrinsics,
   GenHLSLInlineIntrinsics,
+  GenHLSLCompatIntrinsics,
   GenAttrDocs,
   GenBuiltinDocs,
   GenDiagDocs,
@@ -354,6 +355,9 @@ cl::opt<ActionType> Action(
         clEnumValN(GenHLSLInlineIntrinsics, "gen-hlsl-inline-intrinsics",
                    "Generate HLSL inline intrinsic overloads for "
                    "hlsl_intrinsics.h"),
+        clEnumValN(GenHLSLCompatIntrinsics, "gen-hlsl-compat-intrinsics",
+                   "Generate HLSL deprecated compat overloads for "
+                   "hlsl_compat_overloads.h"),
         clEnumValN(GenAttrDocs, "gen-attr-docs",
                    "Generate attribute documentation"),
         clEnumValN(GenBuiltinDocs, "gen-builtin-docs",
@@ -667,6 +671,9 @@ bool ClangTableGenMain(raw_ostream &OS, const RecordKeeper &Records) {
     break;
   case GenHLSLInlineIntrinsics:
     EmitHLSLInlineIntrinsics(Records, OS);
+    break;
+  case GenHLSLCompatIntrinsics:
+    EmitHLSLCompatIntrinsics(Records, OS);
     break;
   case GenAttrDocs:
     EmitClangAttrDocs(Records, OS);

@@ -1,5 +1,6 @@
 // RUN: clang-tblgen -gen-hlsl-alias-intrinsics -I%p/../../include %s | FileCheck %s --check-prefix=ALIAS
 // RUN: clang-tblgen -gen-hlsl-inline-intrinsics -I%p/../../include %s | FileCheck %s --check-prefix=INLINE
+// RUN: clang-tblgen -gen-hlsl-compat-intrinsics -I%p/../../include %s | FileCheck %s --check-prefix=COMPAT
 
 // Tests for the HLSL intrinsic TableGen backend (HLSLEmitter). Each test def
 // exercises a specific feature. Def names are numbered (test_NN_) to control
@@ -466,4 +467,119 @@ def test_17_shape_arg : HLSLBuiltin<"shapearg", "__builtin_shapearg"> {
 
 // ALIAS-NOT: inline_only_func
 // ALIAS-NOT: detailfunc
+
+//===----------------------------------------------------------------------===//
+// Compat overloads: standard unary (double + integer deprecation).
+// Exercises: HLSLStdUnaryCompat, Deprec64Bit, DeprecInt, scalar + vector
+// shapes, cast-and-call body generation.
+//===----------------------------------------------------------------------===//
+
+def : HLSLStdUnaryCompat<"test_compat_unary">;
+
+// COMPAT-LABEL: // test_compat_unary compat overloads
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_unary is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr float test_compat_unary(double p0) { return test_compat_unary((float)p0); }
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_unary is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr float2 test_compat_unary(double2 p0) { return test_compat_unary((float2)p0); }
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_unary is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr float3 test_compat_unary(double3 p0) { return test_compat_unary((float3)p0); }
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_unary is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr float4 test_compat_unary(double4 p0) { return test_compat_unary((float4)p0); }
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x int lowering for test_compat_unary is deprecated. Explicitly cast parameters to float types.")]]
+// COMPAT-NEXT: constexpr float test_compat_unary(int p0) { return test_compat_unary((float)p0); }
+// COMPAT: constexpr float4 test_compat_unary(uint64_t4 p0) { return test_compat_unary((float4)p0); }
+//
+// COMPAT-NOT: test_compat_unary(
+
+//===----------------------------------------------------------------------===//
+// Compat overloads: binary (double + integer deprecation).
+// Exercises: HLSLStdBinaryCompat, two-argument cast-and-call body.
+//===----------------------------------------------------------------------===//
+
+def : HLSLStdBinaryCompat<"test_compat_binary">;
+
+// COMPAT-LABEL: // test_compat_binary compat overloads
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_binary is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr float test_compat_binary(double p0, double p1) { return test_compat_binary((float)p0, (float)p1); }
+// COMPAT: constexpr float4 test_compat_binary(uint64_t4 p0, uint64_t4 p1) { return test_compat_binary((float4)p0, (float4)p1); }
+//
+// COMPAT-NOT: test_compat_binary(
+
+//===----------------------------------------------------------------------===//
+// Compat overloads: ternary (double + integer deprecation).
+// Exercises: HLSLStdTernaryCompat, three-argument cast-and-call body.
+//===----------------------------------------------------------------------===//
+
+def : HLSLStdTernaryCompat<"test_compat_ternary">;
+
+// COMPAT-LABEL: // test_compat_ternary compat overloads
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_ternary is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr float test_compat_ternary(double p0, double p1, double p2) { return test_compat_ternary((float)p0, (float)p1, (float)p2); }
+// COMPAT: constexpr float4 test_compat_ternary(uint64_t4 p0, uint64_t4 p1, uint64_t4 p2) { return test_compat_ternary((float4)p0, (float4)p1, (float4)p2); }
+//
+// COMPAT-NOT: test_compat_ternary(
+
+//===----------------------------------------------------------------------===//
+// Compat overloads: custom return type (bool) with deprecation.
+// Exercises: ReturnType override, single CompatGroup with Deprec64Bit.
+//===----------------------------------------------------------------------===//
+
+def : HLSLCompatOverload<"test_compat_bool_ret", 1> {
+  let ReturnType = BoolTy;
+  let Groups = [DoubleDeprec];
+}
+
+// COMPAT-LABEL: // test_compat_bool_ret compat overloads
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_bool_ret is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr bool test_compat_bool_ret(double p0) { return test_compat_bool_ret((float)p0); }
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_bool_ret is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr bool2 test_compat_bool_ret(double2 p0) { return test_compat_bool_ret((float2)p0); }
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_bool_ret is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr bool3 test_compat_bool_ret(double3 p0) { return test_compat_bool_ret((float3)p0); }
+// COMPAT-NEXT: {{\[\[}}deprecated("In 202x 64 bit API lowering for test_compat_bool_ret is deprecated. Explicitly cast parameters to 32 or 16 bit types.")]]
+// COMPAT-NEXT: constexpr bool4 test_compat_bool_ret(double4 p0) { return test_compat_bool_ret((float4)p0); }
+//
+// COMPAT-NOT: test_compat_bool_ret(
+
+//===----------------------------------------------------------------------===//
+// Compat overloads: no deprecation attribute.
+// Exercises: NoDeprec / DoubleNoDeprec group (no [[deprecated]] emitted).
+//===----------------------------------------------------------------------===//
+
+def : HLSLCompatOverload<"test_compat_nodeprec", 1> {
+  let ReturnType = BoolTy;
+  let Groups = [DoubleNoDeprec];
+}
+
+// COMPAT-LABEL: // test_compat_nodeprec compat overloads
+// COMPAT-NEXT: constexpr bool test_compat_nodeprec(double p0) { return test_compat_nodeprec((float)p0); }
+// COMPAT-NEXT: constexpr bool2 test_compat_nodeprec(double2 p0) { return test_compat_nodeprec((float2)p0); }
+// COMPAT-NEXT: constexpr bool3 test_compat_nodeprec(double3 p0) { return test_compat_nodeprec((float3)p0); }
+// COMPAT-NEXT: constexpr bool4 test_compat_nodeprec(double4 p0) { return test_compat_nodeprec((float4)p0); }
+//
+// COMPAT-NOT: test_compat_nodeprec(
+
+//===----------------------------------------------------------------------===//
+// Verify compat backend does not emit HLSLBuiltin overloads.
+//===----------------------------------------------------------------------===//
+
+// COMPAT-NOT: _HLSL_BUILTIN_ALIAS
+// COMPAT-NOT: myfunc
+// COMPAT-NOT: inline_only_func
+// COMPAT-NOT: detailfunc
+
+//===----------------------------------------------------------------------===//
+// Verify alias/inline backends do not emit compat overloads.
+//===----------------------------------------------------------------------===//
+
+// ALIAS-NOT: test_compat_unary
+// ALIAS-NOT: test_compat_binary
+// ALIAS-NOT: test_compat_ternary
+// ALIAS-NOT: test_compat_bool_ret
+// ALIAS-NOT: test_compat_nodeprec
+// INLINE-NOT: test_compat_unary
+// INLINE-NOT: test_compat_binary
+// INLINE-NOT: test_compat_ternary
+// INLINE-NOT: test_compat_bool_ret
+// INLINE-NOT: test_compat_nodeprec
 

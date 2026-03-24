@@ -318,3 +318,105 @@ class HLSLOneArgInlineBuiltin<string name> : HLSLBuiltin<name> {
 //       Include "hlsl_alias_intrinsics_gen.inc" in hlsl_alias_intrinsics.h
 //       Include "hlsl_inline_intrinsics_gen.inc" in hlsl_intrinsics.h
 
+//===----------------------------------------------------------------------===//
+// Deprecated compat overloads
+//
+// These classes generate deprecated compatibility overloads that cast arguments
+// from one type (e.g. double, int) to a target type (e.g. float) and call the
+// same function. They produce hlsl_compat_intrinsics_gen.inc.
+//===----------------------------------------------------------------------===//
+
+// Deprecation message category. Message uses {0} as a placeholder for the
+// function name.
+class CompatDeprecation<string message> {
+  string Message = message;
+}
+
+def NoDeprec : CompatDeprecation<"">;
+def Deprec64Bit : CompatDeprecation<
+  "In 202x 64 bit API lowering for {0} is deprecated. "
+  "Explicitly cast parameters to 32 or 16 bit types.">;
+def DeprecInt : CompatDeprecation<
+  "In 202x int lowering for {0} is deprecated. "
+  "Explicitly cast parameters to float types.">;
+
+// A group of source types sharing the same deprecation category.
+class CompatGroup<list<HLSLType> types, CompatDeprecation deprec> {
+  list<HLSLType> Types = types;
+  CompatDeprecation Deprecation = deprec;
+}
+
+def DoubleDeprec : CompatGroup<[DoubleTy], Deprec64Bit>;
+def IntDeprec    : CompatGroup<[IntTy, UIntTy, Int64Ty, UInt64Ty], DeprecInt>;
+def DoubleNoDeprec : CompatGroup<[DoubleTy], NoDeprec>;
+
+// A deprecated compatibility overload. Generates constexpr inline functions
+// that cast all arguments from each source type to CastType and call the
+// same function.
+class HLSLCompatOverload<string name, int arity> {
+  string Name = name;
+  int Arity = arity;
+  HLSLType CastType = FloatTy;
+  HLSLType ReturnType = FloatTy;
+  list<CompatGroup> Groups;
+  bit VaryingScalar = 1;
+  list<int> VaryingVecSizes = [2, 3, 4];
+}
+
+// Standard compat overloads: double (deprecated 64-bit) + integer (deprecated int).
+defvar StdCompatGroups = [DoubleDeprec, IntDeprec];
+
+class HLSLStdUnaryCompat<string name> : HLSLCompatOverload<name, 1> {
+  let Groups = StdCompatGroups;
+}
+class HLSLStdBinaryCompat<string name> : HLSLCompatOverload<name, 2> {
+  let Groups = StdCompatGroups;
+}
+class HLSLStdTernaryCompat<string name> : HLSLCompatOverload<name, 3> {
+  let Groups = StdCompatGroups;
+}
+
+//===----------------------------------------------------------------------===//
+// Compat overload definitions (sorted alphabetically)
+//===----------------------------------------------------------------------===//
+
+def : HLSLStdUnaryCompat<"acos">;
+def : HLSLStdUnaryCompat<"asin">;
+def : HLSLStdUnaryCompat<"atan">;
+def : HLSLStdBinaryCompat<"atan2">;
+def : HLSLStdUnaryCompat<"ceil">;
+def : HLSLStdUnaryCompat<"cos">;
+def : HLSLStdUnaryCompat<"cosh">;
+def : HLSLStdUnaryCompat<"degrees">;
+def : HLSLStdUnaryCompat<"exp">;
+def : HLSLStdUnaryCompat<"exp2">;
+def : HLSLStdUnaryCompat<"floor">;
+def : HLSLStdUnaryCompat<"frac">;
+
+def : HLSLCompatOverload<"isinf", 1> {
+  let ReturnType = BoolTy;
+  let Groups = [DoubleDeprec];
+}
+
+def : HLSLCompatOverload<"isnan", 1> {
+  let ReturnType = BoolTy;
+  let Groups = [DoubleNoDeprec];
+}
+
+def : HLSLStdTernaryCompat<"lerp">;
+def : HLSLStdUnaryCompat<"log">;
+def : HLSLStdUnaryCompat<"log10">;
+def : HLSLStdUnaryCompat<"log2">;
+def : HLSLStdUnaryCompat<"normalize">;
+def : HLSLStdBinaryCompat<"pow">;
+def : HLSLStdUnaryCompat<"radians">;
+def : HLSLStdUnaryCompat<"round">;
+def : HLSLStdUnaryCompat<"rsqrt">;
+def : HLSLStdUnaryCompat<"sin">;
+def : HLSLStdUnaryCompat<"sinh">;
+def : HLSLStdUnaryCompat<"sqrt">;
+def : HLSLStdBinaryCompat<"step">;
+def : HLSLStdUnaryCompat<"tan">;
+def : HLSLStdUnaryCompat<"tanh">;
+def : HLSLStdUnaryCompat<"trunc">;
+

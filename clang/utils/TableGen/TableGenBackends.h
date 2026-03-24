@@ -195,6 +195,8 @@ void EmitHLSLAliasIntrinsics(const llvm::RecordKeeper &Records,
                              llvm::raw_ostream &OS);
 void EmitHLSLInlineIntrinsics(const llvm::RecordKeeper &Records,
                               llvm::raw_ostream &OS);
+void EmitHLSLCompatIntrinsics(const llvm::RecordKeeper &Records,
+                              llvm::raw_ostream &OS);
 
 void EmitClangAttrDocs(const llvm::RecordKeeper &Records,
                        llvm::raw_ostream &OS);
